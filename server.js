@@ -15,46 +15,63 @@ app.use(bodyParser.json());
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 
 // Create a function to execute queries
-async function executeQuery(query, params = []) {
-    const connection = await mysql.createConnection({
-        host: 'server959.iseencloud.net',
+app.get('/api/debug-db', async (req, res) => {
+    const startTime = Date.now(); // Track execution time
+
+    try {
+        console.log("🔍 Checking database connection...");
+
+        // Create a new connection
+        const connection = await mysql.createConnection({
+           host: 'server959.iseencloud.net',
         user: 'dsrsrc_cassh',
         password: 'dsrsrc_cassh',
         database: 'dsrsrc_cassh',
         port: 3306
-    });
-    try {
-        const [results] = await connection.execute(query, params);
-        return results;
+            connectTimeout: 10000 // 10 seconds timeout
+        });
+
+        // Run a simple query
+        const [results] = await connection.execute('SELECT 1');
+
+        await connection.end(); // Close connection
+        const endTime = Date.now();
+
+        console.log("✅ Database connected successfully!");
+        res.status(200).send({
+            message: "Database Connected",
+            executionTime: `${endTime - startTime}ms`,
+            results
+        });
+
     } catch (error) {
-        console.error('Database error:', error);
-        throw error;
-    } finally {
-        await connection.end();
-    }
-}
+        console.error("❌ Database connection failed:", error);
 
-// Middleware to verify JWT token
-function verifyToken(req, res, next) {
-    const token = req.headers['authorization'];
-    if (!token) return res.status(401).send({ message: 'Unauthorized' });
+        // Detect common errors
+        let errorType;
+        if (error.code === 'ECONNREFUSED') {
+            errorType = "Connection Refused: Database may be offline or credentials are wrong.";
+        } else if (error.code === 'ETIMEDOUT') {
+            errorType = "Connection Timed Out: Remote MySQL might be blocking access.";
+        } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+            errorType = "Access Denied: Wrong username or password.";
+        } else if (error.code === 'ENOTFOUND') {
+            errorType = "Host Not Found: Check DB_HOST in .env.";
+        } else {
+            errorType = "Unknown Error: Check logs.";
+        }
 
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
-        if (err) return res.status(403).send({ message: 'Invalid token' });
-        req.user = decoded;
-        next();
-    });
-}
-
-// Test database connection
-app.get('/api/test-db', async (req, res) => {
-    try {
-        await executeQuery('SELECT 1');
-        res.send({ message: 'Database Connected' });
-    } catch (error) {
-        res.status(500).send({ message: 'Database Connection Failed', error: error.message });
+        res.status(500).send({
+            message: "Database Connection Failed",
+            error: error.message,
+            errorType,
+            code: error.code
+        });
     }
 });
+
+// Middleware to verify JWT token
+
 
 // Signup route
 app.post('/api/signup', async (req, res) => {
