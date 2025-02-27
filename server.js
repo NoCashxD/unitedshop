@@ -27,8 +27,8 @@ app.get('/api/debug-db', async (req, res) => {
         user: 'dsrsrc_cassh',
         password: 'dsrsrc_cassh',
         database: 'dsrsrc_cassh',
-        port: 3306
-            connectTimeout: 10000 
+        port: 3306,
+        connectTimeout: 10000 
         });
 
         // Run a simple query
