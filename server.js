@@ -18,9 +18,9 @@ app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 async function executeQuery(query, params = []) {
     const connection = await mysql.createConnection({
         host: 'server959.iseencloud.net',
-        user: 'nocash_cassh',
-        password: 'nocash_cassh',
-        database: 'nocash_cassh',
+        user: 'dsrsrc_cassh',
+        password: 'dsrsrc_cassh',
+        database: 'dsrsrc_cassh',
         port: 3306
     });
     try {
