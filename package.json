@@ -42,7 +42,11 @@
     "react-toastify": "^10.0.5",
     "react-window": "^1.8.10",
     "redis": "^4.7.0",
-    "svg-captcha": "^1.4.0"
+    "svg-captcha": "^1.4.0",
+    "mysql2": "^3.2.4",
+    "jsonwebtoken": "^9.0.2",
+     "body-parser": "^1.20.2",
+     "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
