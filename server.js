@@ -43,9 +43,9 @@ app.use((req, res, next) => {
 const db = mysql.createPool({
   connectionLimit: 10,
   host: 'server959.iseencloud.net',
-  user: 'nocash_vclub',
-  password: '5cdWDOf1dgF8',
-  database: 'nocash_vclub',
+  user: 'nocash_cassh',
+  password: 'nocash_cassh',
+  database: 'nocash_cassh',
   port: 3306,
   connectTimeout: 30000 // Increase timeout to 30 seconds
 });
