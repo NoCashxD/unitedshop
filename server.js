@@ -73,15 +73,21 @@ const handleDisconnect = () => {
 };
 
 handleDisconnect();
-app.get('/test-db', (req, res) => {
-    db.query('SELECT 1 + 1 AS result', (err, results) => {
+db.getConnection((err, connection) => {
+    if (err) {
+        console.error('Database Connection Error:', err);
+        return res.status(500).send({ message: 'Database Connection Failed', error: err.code });
+    }
+    connection.query('SELECT 1', (err, results) => {
+        connection.release();
         if (err) {
-            console.error('Database Test Error:', err);
-            return res.status(500).send({ message: 'Database Connection Failed' });
+            console.error('Query Error:', err);
+            return res.status(500).send({ message: 'Query Failed', error: err.code });
         }
-        res.send({ message: 'Database Connected', result: results[0].result });
+        res.send({ message: 'Database Connected', result: results });
     });
 });
+
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
