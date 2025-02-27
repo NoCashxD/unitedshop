@@ -40,15 +40,28 @@ app.use((req, res, next) => {
 
 
 // MySQL connection pooling
-const db = mysql.createPool({
-  connectionLimit: 10,
-  host: 'server959.iseencloud.net',
-  user: 'nocash_cassh',
-  password: 'nocash_cassh',
-  database: 'nocash_cassh',
-  port: 3306,
-  connectTimeout: 30000 // Increase timeout to 30 seconds
-});
+const mysql = require('mysql2/promise'); // Use promise-based MySQL
+
+async function executeQuery(query, params = []) {
+    const connection = await mysql.createConnection({
+        host: 'server959.iseencloud.net',
+        user: 'nocash_cassh',
+        password: 'nocash_cassh',
+        database: 'nocash_cassh',
+        port: 3306
+    });
+
+    try {
+        const [results] = await connection.execute(query, params);
+        return results;
+    } catch (error) {
+        console.error('Database error:', error);
+        throw error;
+    } finally {
+        await connection.end(); // Close connection
+    }
+}
+
 
 
 const handleDisconnect = () => {
@@ -73,19 +86,13 @@ const handleDisconnect = () => {
 };
 
 handleDisconnect();
-db.getConnection((err, connection) => {
-    if (err) {
-        console.error('Database Connection Error:', err);
-        return res.status(500).send({ message: 'Database Connection Failed', error: err.code });
+app.get('/test-db', async (req, res) => {
+    try {
+        const result = await executeQuery('SELECT 1');
+        res.send({ message: 'Database Connected', result });
+    } catch (error) {
+        res.status(500).send({ message: 'Database Connection Failed', error: error.message });
     }
-    connection.query('SELECT 1', (err, results) => {
-        connection.release();
-        if (err) {
-            console.error('Query Error:', err);
-            return res.status(500).send({ message: 'Query Failed', error: err.code });
-        }
-        res.send({ message: 'Database Connected', result: results });
-    });
 });
 
 
